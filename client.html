@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Food Order App</title>
+    <style>
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Place Order</h2>
+
+    <input id="name" placeholder="Customer Name" /><br /><br />
+    <input id="food" placeholder="Food Item" /><br /><br />
+    <input id="qty" type="number" placeholder="Quantity" /><br /><br />
+
+    <button onclick="placeOrder()">Order</button>
+    <button onclick="getOrders()">Get All Orders</button>
+
+    <pre id="output"></pre>
+
+    <script>
+      async function placeOrder() {
+        const output = document.getElementById("output");
+        output.textContent = ""; // clear previous output
+
+        const customerName = document.getElementById("name").value.trim();
+        const food = document.getElementById("food").value.trim();
+        const quantity = Number(document.getElementById("qty").value);
+
+        /* ✅ FRONTEND VALIDATION */
+        if (!customerName || !food || !quantity || quantity < 1) {
+          output.innerHTML =
+            "<span class='error'>❌ Please fill all fields correctly.</span>";
+          return;
+        }
+
+        const data = { customerName, food, quantity };
+
+        const res = await fetch("http://localhost:3000/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+
+        /* ✅ HANDLE BACKEND VALIDATION ERRORS */
+        if (!res.ok) {
+          output.innerHTML =
+            "<span class='error'>❌ Validation failed:<br>" +
+            JSON.stringify(result, null, 2) +
+            "</span>";
+          return;
+        }
+
+        /* ✅ SUCCESS */
+        output.textContent = JSON.stringify(result, null, 2);
+      }
+
+      async function getOrders() {
+        const res = await fetch("http://localhost:3000/orders");
+        const result = await res.json();
+
+        document.getElementById("output").textContent = JSON.stringify(
+          result,
+          null,
+          2,
+        );
+      }
+    </script>
+  </body>
+</html>
